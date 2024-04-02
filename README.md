@@ -1,0 +1,1 @@
+# IndieGala-sale-scraper
