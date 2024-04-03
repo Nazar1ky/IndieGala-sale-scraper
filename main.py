@@ -42,41 +42,41 @@ def get_data(captcha_cookies):
     pages_count = 1
 
     while i <= pages_count:
-        while True: # To make possible make many attempts
-            time.sleep(random.randint(7, 12)) # To reduce load for captcha
+        time.sleep(random.randint(7, 12)) # To reduce load for captcha
 
-            response = requests.get(f"https://www.indiegala.com/games/ajax/on-sale/lowest-price/{i}", headers=headers)
+        response = requests.get(f"https://www.indiegala.com/games/ajax/on-sale/lowest-price/{i}", headers=headers)
 
-            try:
-                html = response.json()['html']
-            except:
-                print(f"Error occurred on page #{i}\n{response.content}")
-                time.sleep(random.randint(10, 20))
+        try:
+            html = response.json()['html']
+        except:
+            print(f"Error occurred on page #{i}\n{response.content}")
+            time.sleep(random.randint(10, 20))
+            continue
 
-            print(f"Page #{i} successfully scraped!")
+        print(f"Page #{i} successfully scraped!")
 
-            soup = BeautifulSoup(html, "lxml")
+        soup = BeautifulSoup(html, "lxml")
 
-            pages_count = int(soup.find_all("div", class_ = "page-link-cont")[-1].find("a").get("onclick").split("/")[-1].split("'")[0])
-            products = soup.find_all("div", class_ = "main-list-results-item")
+        pages_count = int(soup.find_all("div", class_ = "page-link-cont")[-1].find("a").get("onclick").split("/")[-1].split("'")[0])
 
-            for product in products:
-                product_info = product.find("h3", class_ = "bg-gradient-red").find("a")
-                product_title = product_info.text
-                product_url = f"https://www.indiegala.com{product_info.get("href")}"
-                product_discount = product.find("div", class_ = "main-list-results-item-discount").text
-                product_price_without_discount = product.find("div", class_ = "main-list-results-item-price-old").text
-                product_price_with_discount = product.find("div", class_ = "main-list-results-item-price-new").text
+        products = soup.find_all("div", class_ = "main-list-results-item")
 
-                data.append({
-                    "product_title": product_title,
-                    "product_url": product_url,
-                    "product_discount": product_discount,
-                    "product_price_without_discount": product_price_without_discount,
-                    "product_price_with_discount": product_price_with_discount
-                })
-            i += 1
-            break
+        for product in products:
+            product_info = product.find("h3", class_ = "bg-gradient-red").find("a")
+            product_title = product_info.text
+            product_url = f"https://www.indiegala.com{product_info.get("href")}"
+            product_discount = product.find("div", class_ = "main-list-results-item-discount").text
+            product_price_without_discount = product.find("div", class_ = "main-list-results-item-price-old").text
+            product_price_with_discount = product.find("div", class_ = "main-list-results-item-price-new").text
+
+            data.append({
+                "product_title": product_title,
+                "product_url": product_url,
+                "product_discount": product_discount,
+                "product_price_without_discount": product_price_without_discount,
+                "product_price_with_discount": product_price_with_discount
+            })
+        i += 1
 
     return data
 
