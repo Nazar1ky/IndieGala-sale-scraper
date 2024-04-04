@@ -9,8 +9,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-
-from rss import TIMEOUT
+from selenium.webdriver.support import expected_conditions as EC
 
 headers = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -52,12 +51,12 @@ def get_data(captcha_cookies):
         response = requests.get(
             f"https://www.indiegala.com/games/ajax/on-sale/lowest-price/{i}",
             headers=headers,
-            timeout=TIMEOUT,
+            timeout=25,
         )
 
         try:
             html = response.json()["html"]
-        except (TypeError, KeyError):
+        except (TypeError, KeyError, requests.exceptions.JSONDecodeError):
             print(f"Error occurred on page #{i}\n{response.content}")
             time.sleep(random.randint(10, 20))
             continue
@@ -120,9 +119,8 @@ def bypass_captcha(*, debug: bool = False):
 
         driver.get("https://www.indiegala.com/games/on-sale")
 
-        wait = WebDriverWait(driver, timeout=15)
-        element = driver.find_element(By.CSS_SELECTOR, "div.page-link-cont.left a")
-        wait.until(lambda d: element.is_displayed())
+        wait = WebDriverWait(driver, 15)
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.page-link-cont.left a")))
 
         if debug:
             driver.save_screenshot("test.png")
@@ -134,9 +132,6 @@ def bypass_captcha(*, debug: bool = False):
         for cookie in cookies:
             if cookie["name"] in captcha_cookies:
                 captcha_cookies[cookie["name"]] = cookie["value"]
-
-    except Exception as e:
-        print(e)
 
     finally:
         driver.quit()
