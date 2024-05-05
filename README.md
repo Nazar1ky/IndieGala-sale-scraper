@@ -11,8 +11,6 @@
     </a>
 </p>
 
-<img src="https://github.com/Nazar1ky/IndieGala-sale-scraper/blob/main/pic.png" />
-
 ## Usage:
 IndieGala Sale Scraper is pretty simple to use.
 
@@ -25,3 +23,5 @@ IndieGala Sale Scraper is pretty simple to use.
 2. Run `main.py`.
 
 3. Follow the script instructions.
+
+<img src="https://github.com/Nazar1ky/IndieGala-sale-scraper/blob/main/pic.png" />
