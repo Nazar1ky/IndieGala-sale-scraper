@@ -1,34 +1,16 @@
-import datetime
+import datetime  # noqa: D100
 import json
-import random
 import time
 from pathlib import Path
+from random import randint
 
-import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
-headers = {
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-    "Accept-Encoding": "gzip, deflate, br, zstd",
-    "Cache-Control": "max-age=0",
-    "Cookie": None,
-    "Sec-Ch-Ua": '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
-    "Sec-Ch-Ua-Mobile": "?0",
-    "Sec-Ch-Ua-Platform": '"Windows"',
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "none",
-    "Sec-Fetch-User": "?1",
-    "Upgrade-Insecure-Requests": "1",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-}
 
 
-def save_data(data, file_name) -> None:
+def save_data(data: json, file_name: str) -> None:
+    """Create JSON file with json data."""
     if not Path("data/").exists():
         Path("data").mkdir()
 
@@ -36,78 +18,71 @@ def save_data(data, file_name) -> None:
         json.dump(data, file, ensure_ascii=False, indent=4)
 
 
-def get_data(captcha_cookies):
-    headers["Cookie"] = (
-        f"visid_incap_255598={captcha_cookies['visid_incap_255598']}; incap_ses_1288_255598={captcha_cookies['incap_ses_1288_255598']}"
+def remove_duplicates_and_sort(products: list[dict]) -> list[dict]:
+    """Return sorted products and removed duplicate products."""
+    products = sorted(products, key=lambda x: float(x["product_price_with_discount"].split()[0]))
+
+    products_title = []
+
+    for i, product in enumerate(products):
+        if product["product_title"] in products_title:
+            del products[i]
+
+    return products
+
+def parse_page(html: str) -> tuple[int, list[dict]]:
+    """Scrap current page HTML. Return page count and products."""
+    parsed_products = []
+
+    soup = BeautifulSoup(html, "lxml")
+
+    products = soup.find_all("div", class_="main-list-results-item")
+
+    for product in products:
+        product_info = product.find("h3", class_="bg-gradient-red").find("a")
+        product_title = product_info.text
+        product_url = f"https://www.indiegala.com{product_info.get("href")}"
+        product_discount = product.find(
+            "div",
+            class_="main-list-results-item-discount",
+        ).text
+
+        product_price_without_discount = product.find(
+            "div",
+            class_="main-list-results-item-price-old",
+        ).text
+
+        product_price_with_discount = product.find(
+            "div",
+            class_="main-list-results-item-price-new",
+        ).text
+
+        parsed_products.append(
+            {
+                "product_title": product_title,
+                "product_url": product_url,
+                "product_discount": product_discount,
+                "product_price_with_discount": product_price_with_discount,
+                "product_price_without_discount": product_price_without_discount,
+            },
+        )
+
+    pages_count = int(
+        soup.find_all("div", class_="page-link-cont")[-1]
+        .find("a")
+        .get("onclick")
+        .split("/")[-1]
+        .split("'")[0],
     )
 
+    return pages_count, parsed_products
+
+def get_all_data() -> list[dict]:
+    """Get all products from all pages."""
     data = []
-    i = 1
-    pages_count = 1
 
-    while i <= pages_count:
-        time.sleep(random.randint(7, 12))  # To reduce load for captcha
-
-        response = requests.get(
-            f"https://www.indiegala.com/games/ajax/on-sale/lowest-price/{i}",
-            headers=headers,
-            timeout=25,
-        )
-
-        try:
-            html = response.json()["html"]
-        except (TypeError, KeyError, requests.exceptions.JSONDecodeError):
-            print(f"Error occurred on page #{i}\n{response.content}")
-            time.sleep(random.randint(10, 20))
-            continue
-
-        print(f"Page #{i} successfully scraped!")
-
-        soup = BeautifulSoup(html, "lxml")
-
-        pages_count = int(
-            soup.find_all("div", class_="page-link-cont")[-1]
-            .find("a")
-            .get("onclick")
-            .split("/")[-1]
-            .split("'")[0],
-        )
-
-        products = soup.find_all("div", class_="main-list-results-item")
-
-        for product in products:
-            product_info = product.find("h3", class_="bg-gradient-red").find("a")
-            product_title = product_info.text
-            product_url = f"https://www.indiegala.com{product_info.get("href")}"
-            product_discount = product.find(
-                "div",
-                class_="main-list-results-item-discount",
-            ).text
-            product_price_without_discount = product.find(
-                "div",
-                class_="main-list-results-item-price-old",
-            ).text
-            product_price_with_discount = product.find(
-                "div",
-                class_="main-list-results-item-price-new",
-            ).text
-
-            data.append(
-                {
-                    "product_title": product_title,
-                    "product_url": product_url,
-                    "product_discount": product_discount,
-                    "product_price_without_discount": product_price_without_discount,
-                    "product_price_with_discount": product_price_with_discount,
-                },
-            )
-        i += 1
-
-    return data
-
-
-def bypass_captcha(*, debug: bool = False):
-    captcha_cookies = None
+    current_page_number = 1
+    pages_count = None
 
     try:
         options = webdriver.ChromeOptions()
@@ -117,41 +92,40 @@ def bypass_captcha(*, debug: bool = False):
         options.add_argument("--headless=new")
         driver = webdriver.Chrome(options=options)
 
-        driver.get("https://www.indiegala.com/games/on-sale")
+        while current_page_number <= pages_count if pages_count else 1:
+            print(f"Scraping: {current_page_number}/{pages_count}")
+            driver.get(f"https://www.indiegala.com/games/ajax/on-sale/lowest-price/{current_page_number}")
 
-        wait = WebDriverWait(driver, 15)
-        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.page-link-cont.left a")))
+            current_page_data = json.loads(driver.find_element(By.TAG_NAME, "pre").text)
 
-        if debug:
-            driver.save_screenshot("test.png")
+            _pages_count, products = parse_page(current_page_data["html"])
 
-        cookies = driver.get_cookies()
+            pages_count = pages_count or _pages_count
 
-        captcha_cookies = {"visid_incap_255598": None, "incap_ses_1288_255598": None}
+            data.extend(products)
 
-        for cookie in cookies:
-            if cookie["name"] in captcha_cookies:
-                captcha_cookies[cookie["name"]] = cookie["value"]
+            current_page_number += 1
+
+            time.sleep(randint(3, 6))  # noqa: S311
 
     finally:
         driver.quit()
 
-    return captcha_cookies
+    return data
 
 
 def main() -> None:
-    print("Bypassing Captcha...")
-    page_info = bypass_captcha()
-    print("Captcha bypassed! Parsing...")
+    """Run the script."""
+    print("Scraping...")
+    data = get_all_data()
 
-    data = get_data(page_info)
-    if data == 0:
-        return
+    print("Sorting products...")
+    data = remove_duplicates_and_sort(data)
 
+    print("Saving file...")
     file_name = f"{datetime.datetime.now(tz=datetime.UTC).strftime("%d_%m_%Y")}.json"
-
     save_data(data, file_name)
 
-
+    print(f"Done! Total products: {len(data)}")
 if __name__ == "__main__":
     main()
