@@ -1,5 +1,6 @@
 import datetime  # noqa: D100
 import json
+import re
 import time
 from pathlib import Path
 from random import randint
@@ -20,7 +21,7 @@ def save_data(data: json, file_name: str) -> None:
 
 def remove_duplicates_and_sort(products: list[dict]) -> list[dict]:
     """Return sorted products and removed duplicate products."""
-    products = sorted(products, key=lambda x: float(x["product_price_with_discount"].split()[0]))
+    products = sorted(products, key=lambda x: float(re.match(r"[+-]?([0-9]*[.])?[0-9]+", x["product_price_with_discount"])[0]))
 
     products_title = []
 
