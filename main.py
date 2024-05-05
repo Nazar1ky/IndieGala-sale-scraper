@@ -18,6 +18,15 @@ def save_data(data: json, file_name: str) -> None:
     with Path(f"data/{file_name}").open("w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
 
+def check_price(price: str) -> bool:
+    """Return True if all okay. Return False if prices in wrong format."""
+    match = re.search(r"[+-]?([0-9]*[.])?[0-9]+", price)
+
+    if not match:
+        return False
+
+    return True
+
 def find_numbers(price: str) -> float:
     """Return founded number in str."""
     match = re.search(r"[+-]?([0-9]*[.])?[0-9]+", price)
@@ -65,6 +74,10 @@ def parse_page(html: str) -> tuple[int, list[dict]]:
             class_="main-list-results-item-price-new",
         ).text
 
+        if not check_price(product_price_without_discount):
+            print(f"Skipped product: {product_title} | Price: {product_price_without_discount}")
+            continue
+
         parsed_products.append(
             {
                 "product_title": product_title,
@@ -90,7 +103,7 @@ def get_all_data() -> list[dict]:
     data = []
 
     current_page_number = 1
-    pages_count = None
+    pages_count = 1
 
     try:
         options = webdriver.ChromeOptions()
@@ -104,11 +117,14 @@ def get_all_data() -> list[dict]:
             print(f"Scraping: {current_page_number}/{pages_count}")
             driver.get(f"https://www.indiegala.com/games/ajax/on-sale/lowest-price/{current_page_number}")
 
-            current_page_data = json.loads(driver.find_element(By.TAG_NAME, "pre").text)
+            pre_element = driver.find_element(By.TAG_NAME, "pre")
+            if not pre_element:
+                print("Page can't be loaded")
+                break
 
-            _pages_count, products = parse_page(current_page_data["html"])
+            current_page_data = json.loads(pre_element.text)
 
-            pages_count = pages_count or _pages_count
+            pages_count, products = parse_page(current_page_data["html"])
 
             data.extend(products)
 
