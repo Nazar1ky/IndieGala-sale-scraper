@@ -18,10 +18,18 @@ def save_data(data: json, file_name: str) -> None:
     with Path(f"data/{file_name}").open("w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
 
+def find_numbers(price: str) -> float:
+    """Return founded number in str."""
+    match = re.search(r"[+-]?([0-9]*[.])?[0-9]+", price)
+
+    if not match:
+        return -1
+
+    return float(match[0])
 
 def remove_duplicates_and_sort(products: list[dict]) -> list[dict]:
     """Return sorted products and removed duplicate products."""
-    products = sorted(products, key=lambda x: float(re.match(r"[+-]?([0-9]*[.])?[0-9]+", x["product_price_with_discount"])[0]))
+    products = sorted(products, key=lambda x: find_numbers(x["product_price_with_discount"]))
 
     products_title = []
 
@@ -82,7 +90,7 @@ def get_all_data() -> list[dict]:
     data = []
 
     current_page_number = 1
-    pages_count = 1
+    pages_count = None
 
     try:
         options = webdriver.ChromeOptions()
@@ -120,7 +128,7 @@ def main() -> None:
     data = get_all_data()
 
     print("Sorting products...")
-    print(data)
+
     data = remove_duplicates_and_sort(data)
 
     print("Saving file...")
