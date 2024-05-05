@@ -34,7 +34,6 @@ def remove_duplicates_and_sort(products: list[dict]) -> list[dict]:
 def parse_page(html: str) -> tuple[int, list[dict]]:
     """Scrap current page HTML. Return page count and products."""
     parsed_products = []
-    print(html)
     soup = BeautifulSoup(html, "lxml")
 
     products = soup.find_all("div", class_="main-list-results-item")
@@ -83,7 +82,7 @@ def get_all_data() -> list[dict]:
     data = []
 
     current_page_number = 1
-    pages_count = None
+    pages_count = 1
 
     try:
         options = webdriver.ChromeOptions()
