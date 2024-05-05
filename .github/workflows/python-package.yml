@@ -1,7 +1,7 @@
-name: Ruff
+name: Test script
 on: [push, pull_request]
 jobs:
-  ruff:
+  Test-script:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
