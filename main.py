@@ -41,7 +41,7 @@ def parse_page(html: str) -> tuple[int, list[dict]]:
     for product in products:
         product_info = product.find("h3", class_="bg-gradient-red").find("a")
         product_title = product_info.text
-        product_url = f"https://www.indiegala.com{product_info.get("href")}"
+        product_url = f"https://www.indiegala.com{product_info.get('href')}"
         product_discount = product.find(
             "div",
             class_="main-list-results-item-discount",
