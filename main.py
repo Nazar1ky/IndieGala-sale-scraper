@@ -34,7 +34,7 @@ def remove_duplicates_and_sort(products: list[dict]) -> list[dict]:
 def parse_page(html: str) -> tuple[int, list[dict]]:
     """Scrap current page HTML. Return page count and products."""
     parsed_products = []
-
+    print(html)
     soup = BeautifulSoup(html, "lxml")
 
     products = soup.find_all("div", class_="main-list-results-item")
@@ -121,6 +121,7 @@ def main() -> None:
     data = get_all_data()
 
     print("Sorting products...")
+    print(data)
     data = remove_duplicates_and_sort(data)
 
     print("Saving file...")
