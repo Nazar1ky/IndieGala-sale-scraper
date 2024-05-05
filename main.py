@@ -123,7 +123,7 @@ def main() -> None:
     data = remove_duplicates_and_sort(data)
 
     print("Saving file...")
-    file_name = f"{datetime.datetime.now(tz=datetime.UTC).strftime("%d_%m_%Y")}.json"
+    file_name = f"{datetime.datetime.now(tz=datetime.UTC).strftime('%d_%m_%Y')}.json"
     save_data(data, file_name)
 
     print(f"Done! Total products: {len(data)}")
