@@ -93,7 +93,7 @@ def get_all_data() -> list[dict]:
         driver = webdriver.Chrome(options=options)
 
         while current_page_number <= pages_count if pages_count else 1:
-            print(f"Scraping {current_page_number}/{pages_count}")
+            print(f"Scraping: {current_page_number}/{pages_count}")
             driver.get(f"https://www.indiegala.com/games/ajax/on-sale/lowest-price/{current_page_number}")
 
             current_page_data = json.loads(driver.find_element(By.TAG_NAME, "pre").text)
