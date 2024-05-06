@@ -75,8 +75,8 @@ def parse_page(html: str) -> tuple[int, list[dict]]:
         )
 
         if not product_discount:
-            print(html)
-            break
+            print(f"Skipped: {product_title}")
+            continue
 
         product_discount = product_discount.text.replace(" ", "")
 
