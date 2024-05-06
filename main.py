@@ -72,7 +72,12 @@ def parse_page(html: str) -> tuple[int, list[dict]]:
         product_discount = product.find(
             "div",
             class_="main-list-results-item-discount",
-        ).text.replace(" ", "")
+        )
+        if not product_discount:
+            print(html)
+            break
+
+        product_discount.text.replace(" ", "")
 
         if not check_discount(product_discount):
             product_discount = None
