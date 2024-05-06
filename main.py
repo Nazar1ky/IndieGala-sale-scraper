@@ -1,4 +1,4 @@
-import datetime  # noqa: D100
+import datetime
 import json
 import re
 import time
@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
+NUMBER_REGEX = re.compile(r"[+-]?([0-9]*[.])?[0-9]+") # https://stackoverflow.com/a/12643073
 
 def save_data(data: json, file_name: str) -> None:
     """Create JSON file with json data."""
@@ -20,16 +21,25 @@ def save_data(data: json, file_name: str) -> None:
 
 def check_price(price: str) -> bool:
     """Return True if all okay. Return False if prices in wrong format."""
-    match = re.search(r"[+-]?([0-9]*[.])?[0-9]+", price)
+    match = re.search(NUMBER_REGEX, price)
 
     if not match:
         return False
 
     return True
 
+def check_discount(discount: str) -> bool:
+    """Return true/false if discount is okay."""
+    match = re.search(r"\d+", discount)
+
+    if match and int(match[0]) <= 100 and int(match[0]) >= 0:  # noqa: PLR2004
+        return True
+
+    return False
+
 def find_numbers(price: str) -> float:
     """Return founded number in str."""
-    match = re.search(r"[+-]?([0-9]*[.])?[0-9]+", price)
+    match = re.search(NUMBER_REGEX, price)
 
     if not match:
         return -1
@@ -62,7 +72,10 @@ def parse_page(html: str) -> tuple[int, list[dict]]:
         product_discount = product.find(
             "div",
             class_="main-list-results-item-discount",
-        ).text
+        ).text.replace(" ", "")
+
+        if not check_discount(product_discount):
+            product_discount = None
 
         product_price_without_discount = product.find(
             "div",
@@ -74,8 +87,8 @@ def parse_page(html: str) -> tuple[int, list[dict]]:
             class_="main-list-results-item-price-new",
         ).text
 
-        if not check_price(product_price_without_discount):
-            print(f"Skipped product: {product_title} | Price: {product_price_without_discount}")
+        if not check_price(product_price_with_discount) or not check_price(product_price_without_discount):
+            print(f"Skipped product: {product_title} | Price With Discount: {product_price_with_discount.strip()} | Price Without Discount: {product_price_without_discount.strip()}")
             continue
 
         parsed_products.append(
