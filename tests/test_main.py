@@ -1,4 +1,4 @@
-import unittest  # noqa: INP001
+import unittest
 
 from data1 import data1
 
@@ -11,7 +11,7 @@ class Tests(unittest.TestCase):  # noqa: D101
         with open("tests/page1.html", encoding="utf-8") as file:
             self.test_data = file.read()
 
-    def test_parse_page(self):
+    def test_parse_page(self):  # noqa: ANN101
         result = parse_page(self.test_data)
 
         self.assertEqual(result[0], data1[0])

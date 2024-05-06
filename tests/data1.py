@@ -1,4 +1,4 @@
-data1 = (  # noqa: INP001
+data1 = (
     47,
     [
         {
