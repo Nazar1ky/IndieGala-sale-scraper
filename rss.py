@@ -1,4 +1,4 @@
-import datetime  # noqa: D100
+import datetime
 import json
 import operator
 from pathlib import Path
