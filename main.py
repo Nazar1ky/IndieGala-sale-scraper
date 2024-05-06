@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-NUMBER_REGEX = re.compile(r"[+-]?([0-9]*[.])?[0-9]+") # https://stackoverflow.com/a/12643073
+NUMBER_REGEX = re.compile(r"[+-]?([0-9]*[.])?[0-9]+") # Reference: https://stackoverflow.com/a/12643073
 
 def save_data(data: json, file_name: str) -> None:
     """Create JSON file with json data."""
@@ -174,3 +174,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
