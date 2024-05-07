@@ -132,7 +132,7 @@ def get_all_data() -> list[dict]:
         options.add_argument("--headless=new")
         driver = webdriver.Chrome(options=options)
 
-        while current_page_number <= pages_count if pages_count else 1:
+        while current_page_number <= pages_count:
             print(f"Scraping: {current_page_number}/{pages_count}")
             driver.get(f"https://www.indiegala.com/games/ajax/on-sale/lowest-price/{current_page_number}")
 
