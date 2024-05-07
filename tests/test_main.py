@@ -1,11 +1,11 @@
 import unittest
 
-from data1 import data1
+from tests.data1 import data1
 
 from main import parse_page
 
 
-class Tests(unittest.TestCase):  # noqa: D101
+class Tests(unittest.TestCase):
     @classmethod
     def setUpClass(self) -> None:
         with open("tests/page1.html", encoding="utf-8") as file:
