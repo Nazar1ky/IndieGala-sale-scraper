@@ -1,8 +1,7 @@
 import unittest
 
-from tests.data1 import data1
-
 from main import parse_page
+from tests.data1 import data1
 
 
 class Tests(unittest.TestCase):
