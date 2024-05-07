@@ -58,6 +58,13 @@ def remove_duplicates_and_sort(products: list[dict]) -> list[dict]:
 
     return products
 
+def find(element, *args, **kwargs):
+    """Find, if none then exception."""
+    result = element.find(*args,    **kwargs)
+
+    if not result: raise Exception(f"Error {args} and {kwargs} in {element}")  # noqa: TRY002, EM102
+    return result
+
 def parse_page(html: str) -> tuple[int, list[dict]]:
     """Scrap current page HTML. Return page count and products."""
     parsed_products = []
@@ -66,9 +73,11 @@ def parse_page(html: str) -> tuple[int, list[dict]]:
     products = soup.find_all("div", class_="main-list-results-item")
 
     for product in products:
-        product_info = product.find("h3", class_="bg-gradient-red").find("a")
+        product_info = find(find(product, "h3", class_="bg-gradient-red"), "a")
+
         product_title = product_info.text
         product_url = f"https://www.indiegala.com{product_info.get('href')}"
+
         product_discount = product.find(
             "div",
             class_="main-list-results-item-discount",
