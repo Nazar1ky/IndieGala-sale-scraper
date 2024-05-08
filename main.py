@@ -2,6 +2,7 @@ import datetime
 import json
 import re
 import time
+import urllib.parse
 from pathlib import Path
 from random import randint
 
@@ -58,12 +59,12 @@ def remove_duplicates_and_sort(products: list[dict]) -> list[dict]:
 
     return products
 
-def find(element, *args, **kwargs):
-    """Find, if none then exception."""
-    result = element.find(*args,    **kwargs)
-
-    if not result: raise Exception(f"Error {args} and {kwargs} in {element}")  # noqa: TRY002, EM102
-    return result
+# Reference: https://stackoverflow.com/a/63220249
+def add_cookie(driver: webdriver.Chrome, cookie: dict) -> None:
+    """That function add cookie before visiting first time site."""
+    driver.execute_cdp_cmd("Network.enable", {})
+    driver.execute_cdp_cmd("Network.setCookie", cookie)
+    driver.execute_cdp_cmd("Network.disable", {})
 
 def parse_page(html: str) -> tuple[int, list[dict]]:
     """Scrap current page HTML. Return page count and products."""
@@ -73,8 +74,11 @@ def parse_page(html: str) -> tuple[int, list[dict]]:
     products = soup.find_all("div", class_="main-list-results-item")
 
     for product in products:
-        product_info = find(find(product, "h3", class_="bg-gradient-red"), "a")
-
+        try:
+            product_info = product.find("h3", class_="bg-gradient-red").find("a")
+        except AttributeError as E:
+            print(f"product_info can't be founded. {E}")
+            continue
         product_title = product_info.text
         product_url = f"https://www.indiegala.com{product_info.get('href')}"
 
@@ -126,7 +130,7 @@ def parse_page(html: str) -> tuple[int, list[dict]]:
 
     return pages_count, parsed_products
 
-def get_all_data() -> list[dict]:
+def get_all_data(filters: str) -> list[dict]:
     """Get all products from all pages."""
     data = []
 
@@ -140,6 +144,13 @@ def get_all_data() -> list[dict]:
         )
         options.add_argument("--headless=new")
         driver = webdriver.Chrome(options=options)
+
+        if filters:
+            filters = urllib.parse.quote(filters)
+            add_cookie(driver, {"name": "search-params", "value": filters, "domain" : "www.indiegala.com"})
+
+            # driver.get("https://www.indiegala.com/games/ajax/on-sale/ranking/")
+            # driver.add_cookie({"name": "search-params", "value": filters})
 
         while current_page_number <= pages_count:
             print(f"Scraping: {current_page_number}/{pages_count}")
@@ -169,7 +180,7 @@ def get_all_data() -> list[dict]:
 def main() -> None:
     """Run the script."""
     print("Scraping...")
-    data = get_all_data()
+    data = get_all_data() # Cookie example: '{"platform":["steam"],"product_type":"game"}'
 
     print("Sorting products...")
 
@@ -183,4 +194,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
