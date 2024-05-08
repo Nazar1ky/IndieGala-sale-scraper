@@ -130,7 +130,7 @@ def parse_page(html: str) -> tuple[int, list[dict]]:
 
     return pages_count, parsed_products
 
-def get_all_data(filters: str) -> list[dict]:
+def get_all_data(filters: str | None = None) -> list[dict]:
     """Get all products from all pages."""
     data = []
 
