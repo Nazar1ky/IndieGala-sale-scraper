@@ -33,7 +33,7 @@ def check_discount(discount: str) -> bool:
     """Return true/false if discount is okay."""
     match = re.search(r"\d+", discount)
 
-    if match and int(match[0]) <= 100 and int(match[0]) >= 0:  # noqa: PLR2004
+    if match and int(match[0]) <= 100 and int(match[0]) >= 0:
         return True
 
     return False
@@ -143,6 +143,12 @@ def get_all_data(filters: str | None = None) -> list[dict]:
             "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36",
         )
         options.add_argument("--headless=new")
+
+        # Workaround to disable messages: https://github.com/SeleniumHQ/selenium/issues/13095#issuecomment-1793811638
+        options.set_capability("browserVersion", "117")
+        options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        options.add_argument("--log-level=3")
+
         driver = webdriver.Chrome(options=options)
 
         if filters:
@@ -190,7 +196,7 @@ def main() -> None:
     file_name = f"{datetime.datetime.now().strftime('%d_%m_%Y')}.json"  # noqa: DTZ005
     save_data(data, file_name)
 
-    print(f"Done! Total products: {len(data)}")
+    print(f"Saved -> {file_name} | Total products: {len(data)}")
 
 if __name__ == "__main__":
     main()
