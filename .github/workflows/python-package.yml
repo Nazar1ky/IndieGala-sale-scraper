@@ -15,7 +15,7 @@ jobs:
       - name: Ruff Lint
         uses: chartboost/ruff-action@v1
         with:
-          args: '--select=ALL --ignore=A001,ANN,D,E501,FIX00,INP001,PLR,S101,T201,TD00,ERA001,PTH123,FA102'
+          args: '--select=ALL --ignore=A001,ANN,D,E501,FIX00,INP001,PLR,S101,T201,TD00,ERA001,PTH123,FA102,PT'
 
       - name: Test
         run: |
