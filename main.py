@@ -24,19 +24,13 @@ def check_price(price: str) -> bool:
     """Return True if all okay. Return False if prices in wrong format."""
     match = re.search(NUMBER_REGEX, price)
 
-    if not match:
-        return False
-
-    return True
+    return match
 
 def check_discount(discount: str) -> bool:
     """Return true/false if discount is okay."""
     match = re.search(r"\d+", discount)
 
-    if match and int(match[0]) <= 100 and int(match[0]) >= 0:
-        return True
-
-    return False
+    return bool(match and int(match[0]) <= 100 and int(match[0]) >= 0)
 
 def find_numbers(price: str) -> float:
     """Return founded number in str."""
