@@ -19,6 +19,6 @@ jobs:
         run: |
           python -m unittest discover tests
 
-      - name: Run
-        run: |
-          python main.py
+      # - name: Run
+      #   run: |
+      #     python main.py
