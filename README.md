@@ -26,6 +26,10 @@ IndieGala Sale Scraper is pretty simple to use.
 
 2. Run `main.py`.
 
-3. Follow the script instructions.
+3. Wait a bit.
+
+4. Find your data in `data/`.
+
+## Preview
 
 <img src="https://github.com/Nazar1ky/IndieGala-sale-scraper/blob/main/pic.png" />
