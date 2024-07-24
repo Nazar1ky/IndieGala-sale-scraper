@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 
 NUMBER_REGEX = re.compile(r"[+-]?([0-9]*[.])?[0-9]+") # Reference: https://stackoverflow.com/a/12643073
 
-def save_data(data: json, file_name: str) -> None:
+def save_data(data: list[dict], file_name: str) -> None:
     """Create JSON file with json data."""
     if not Path("data/").exists():
         Path("data").mkdir()
@@ -24,7 +24,7 @@ def check_price(price: str) -> bool:
     """Return True if all okay. Return False if prices in wrong format."""
     match = re.search(NUMBER_REGEX, price)
 
-    return match
+    return bool(match)
 
 def check_discount(discount: str) -> bool:
     """Return true/false if discount is okay."""
